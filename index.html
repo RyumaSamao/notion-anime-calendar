@@ -3,20 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calendrier Anime Prototype</title>
+<title>Calendrier Anime Embed</title>
 <style>
-  body {
-    font-family: Arial, sans-serif;
+  html, body {
+    margin: 0;
+    padding: 0;
     background: #191919;
-    display: flex;
-    justify-content: center;
-    padding: 20px;
+    font-family: Arial, sans-serif;
     color: #fff;
+    height: 100%;
+    overflow: hidden; /* plus de scroll */
   }
 
   .calendar-container {
     width: 100%;
-    max-width: 900px;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 10px;
+    box-sizing: border-box;
   }
 
   /* Mois et flèches */
@@ -24,17 +28,17 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
   }
 
   .month-title {
-    font-size: 28px; /* un peu plus grand */
+    font-size: 22px;
     font-weight: bold;
   }
 
   .arrow {
     cursor: pointer;
-    font-size: 32px; /* plus gros */
+    font-size: 28px;
     user-select: none;
   }
   .arrow.disabled {
@@ -45,31 +49,33 @@
   .calendar-weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 5px;
-    margin-bottom: 5px;
+    gap: 3px;
+    margin-bottom: 3px;
   }
 
   .weekday {
     text-align: center;
     font-weight: bold;
     color: #ccc;
+    font-size: 12px;
   }
 
   .calendar {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 5px;
+    gap: 3px;
     position: relative;
   }
 
   .day {
     background: #2b2b2b;
-    padding: 10px;
-    min-height: 100px;
-    border-radius: 8px;
+    padding: 5px;
+    min-height: 70px;
+    border-radius: 6px;
     position: relative;
     cursor: pointer;
     transition: transform 0.1s, box-shadow 0.1s;
+    font-size: 12px;
   }
   .day:hover {
     transform: scale(1.03);
@@ -78,14 +84,14 @@
 
   .day-number {
     font-weight: bold;
-    margin-bottom: 5px;
+    margin-bottom: 3px;
   }
 
   .anime-rep {
     width: 100%;
-    height: 10px;
-    border-radius: 4px;
-    margin-bottom: 3px;
+    height: 8px;
+    border-radius: 3px;
+    margin-bottom: 2px;
   }
 
   /* Popup */
@@ -94,11 +100,12 @@
     position: absolute;
     background: #2b2b2b;
     border: 1px solid #444;
-    padding: 10px;
+    padding: 8px;
     z-index: 9999;
-    border-radius: 10px;
-    box-shadow: 0 2px 15px rgba(255,255,255,0.3);
-    width: 250px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(255,255,255,0.3);
+    width: 220px;
+    font-size: 12px;
   }
 
   .anime-popup .close-btn {
@@ -109,10 +116,9 @@
   }
 
   .anime-item {
-    margin-bottom: 8px;
-    padding: 5px;
+    margin-bottom: 5px;
+    padding: 3px;
     border-left: 4px solid #000;
-    font-size: 14px;
   }
 </style>
 </head>
@@ -144,17 +150,13 @@
 </div>
 
 <script>
-  // Données simulées réalistes avec saisons
+  // Données simulées
   const animeData = [];
-
-  // Frieren S2 tous les vendredis du 16 janvier au 13 février
   let frierenDate = new Date("2026-01-16");
   for (let i = 0; i < 5; i++) {
     animeData.push({ title: "Frieren S2", date: frierenDate.toISOString().split('T')[0], time: "20:00", ep: i+1, color: "#2ecc71" });
-    frierenDate.setDate(frierenDate.getDate() + 7); // tous les vendredis
+    frierenDate.setDate(frierenDate.getDate() + 7);
   }
-
-  // Autres exemples
   animeData.push({ title: "Jujutsu Kaisen S2", date: "2026-01-16", time: "19:00", ep: 1, color: "#3498db" });
   animeData.push({ title: "One Piece", date: "2026-01-18", time: "10:00", ep: 1015, color: "#e74c3c" });
   animeData.push({ title: "Naruto Shippuden", date: "2026-01-25", time: "21:00", ep: 400, color: "#f1c40f" });
@@ -168,8 +170,8 @@
   const nextArrow = document.getElementById("next-month");
 
   const currentYear = new Date().getFullYear();
-  const startMonth = new Date(currentYear,0,1); // 1er janvier de cette année
-  const endMonth = new Date(currentYear+1,0,1); // 1er janvier de l'année prochaine
+  const startMonth = new Date(currentYear,0,1);
+  const endMonth = new Date(currentYear+1,0,1);
 
   let currentDate = new Date(startMonth);
 
@@ -179,7 +181,6 @@
     const month = date.getMonth();
     monthTitleEl.textContent = date.toLocaleString("fr-FR", { month: "long", year: "numeric" });
 
-    // Gestion flèches
     prevArrow.classList.toggle("disabled", date <= startMonth);
     nextArrow.classList.toggle("disabled", date >= endMonth);
 
@@ -214,10 +215,12 @@
               item.innerHTML = `<strong>${a.title}</strong><br>Ep ${a.ep} - ${a.time}`;
               popupContent.appendChild(item);
             });
-            // Popup à côté de la case
+
+            // Popup au niveau de la case
             const rect = dayEl.getBoundingClientRect();
-            popup.style.top = (rect.bottom + window.scrollY + 5) + "px";
-            popup.style.left = (rect.left + window.scrollX) + "px";
+            const bodyRect = document.body.getBoundingClientRect();
+            popup.style.top = (rect.bottom - bodyRect.top + 5) + "px";
+            popup.style.left = (rect.left - bodyRect.left) + "px";
             popup.style.display = "block";
           };
         }
@@ -227,7 +230,6 @@
     }
   }
 
-  // Navigation
   prevArrow.onclick = () => {
     if (currentDate <= startMonth) return;
     currentDate.setMonth(currentDate.getMonth() - 1);
