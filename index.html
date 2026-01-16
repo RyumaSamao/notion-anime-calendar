@@ -28,14 +28,18 @@
   }
 
   .month-title {
-    font-size: 24px;
+    font-size: 28px; /* un peu plus grand */
     font-weight: bold;
   }
 
   .arrow {
     cursor: pointer;
-    font-size: 24px;
+    font-size: 32px; /* plus gros */
     user-select: none;
+  }
+  .arrow.disabled {
+    opacity: 0.3;
+    cursor: default;
   }
 
   .calendar-weekdays {
@@ -87,19 +91,14 @@
   /* Popup */
   .anime-popup {
     display: none;
-    position: fixed; /* Fixe au viewport pour rester visible */
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 300px;
-    max-height: 400px;
-    overflow-y: auto;
+    position: absolute;
     background: #2b2b2b;
     border: 1px solid #444;
-    padding: 15px;
+    padding: 10px;
     z-index: 9999;
     border-radius: 10px;
     box-shadow: 0 2px 15px rgba(255,255,255,0.3);
+    width: 250px;
   }
 
   .anime-popup .close-btn {
@@ -139,35 +138,50 @@
   <div class="calendar" id="calendar"></div>
 </div>
 
-<!-- Popup -->
 <div class="anime-popup" id="anime-popup">
   <div class="close-btn" id="popup-close">x</div>
   <div id="popup-content"></div>
 </div>
 
 <script>
-  // Données fictives réalistes
-  const animeData = [
-    { title: "Jujutsu Kaisen S2", date: "2026-01-16", time: "19:00", ep: 1, color: "#3498db" },
-    { title: "One Piece", date: "2026-01-18", time: "10:00", ep: 1015, color: "#e74c3c" },
-    { title: "Frieren S2", date: "2026-01-20", time: "20:00", ep: 1, color: "#2ecc71" },
-    { title: "Naruto Shippuden", date: "2026-01-25", time: "21:00", ep: 400, color: "#f1c40f" },
-    { title: "Bleach S2", date: "2026-02-02", time: "18:00", ep: 1, color: "#9b59b6" }
-  ];
+  // Données simulées réalistes avec saisons
+  const animeData = [];
+
+  // Frieren S2 tous les vendredis du 16 janvier au 13 février
+  let frierenDate = new Date("2026-01-16");
+  for (let i = 0; i < 5; i++) {
+    animeData.push({ title: "Frieren S2", date: frierenDate.toISOString().split('T')[0], time: "20:00", ep: i+1, color: "#2ecc71" });
+    frierenDate.setDate(frierenDate.getDate() + 7); // tous les vendredis
+  }
+
+  // Autres exemples
+  animeData.push({ title: "Jujutsu Kaisen S2", date: "2026-01-16", time: "19:00", ep: 1, color: "#3498db" });
+  animeData.push({ title: "One Piece", date: "2026-01-18", time: "10:00", ep: 1015, color: "#e74c3c" });
+  animeData.push({ title: "Naruto Shippuden", date: "2026-01-25", time: "21:00", ep: 400, color: "#f1c40f" });
 
   const calendarEl = document.getElementById("calendar");
   const monthTitleEl = document.getElementById("month-title");
   const popup = document.getElementById("anime-popup");
   const popupContent = document.getElementById("popup-content");
   const popupClose = document.getElementById("popup-close");
+  const prevArrow = document.getElementById("prev-month");
+  const nextArrow = document.getElementById("next-month");
 
-  let currentDate = new Date("2026-01-01");
+  const currentYear = new Date().getFullYear();
+  const startMonth = new Date(currentYear,0,1); // 1er janvier de cette année
+  const endMonth = new Date(currentYear+1,0,1); // 1er janvier de l'année prochaine
+
+  let currentDate = new Date(startMonth);
 
   function renderCalendar(date) {
     calendarEl.innerHTML = "";
     const year = date.getFullYear();
     const month = date.getMonth();
     monthTitleEl.textContent = date.toLocaleString("fr-FR", { month: "long", year: "numeric" });
+
+    // Gestion flèches
+    prevArrow.classList.toggle("disabled", date <= startMonth);
+    nextArrow.classList.toggle("disabled", date >= endMonth);
 
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const firstDay = new Date(year, month, 1).getDay();
@@ -191,7 +205,7 @@
         });
 
         if (animeToday.length > 0) {
-          dayEl.onclick = () => {
+          dayEl.onclick = (e) => {
             popupContent.innerHTML = "";
             animeToday.forEach(a => {
               const item = document.createElement("div");
@@ -200,6 +214,10 @@
               item.innerHTML = `<strong>${a.title}</strong><br>Ep ${a.ep} - ${a.time}`;
               popupContent.appendChild(item);
             });
+            // Popup à côté de la case
+            const rect = dayEl.getBoundingClientRect();
+            popup.style.top = (rect.bottom + window.scrollY + 5) + "px";
+            popup.style.left = (rect.left + window.scrollX) + "px";
             popup.style.display = "block";
           };
         }
@@ -209,12 +227,14 @@
     }
   }
 
-  // Fleches navigation
-  document.getElementById("prev-month").onclick = () => {
+  // Navigation
+  prevArrow.onclick = () => {
+    if (currentDate <= startMonth) return;
     currentDate.setMonth(currentDate.getMonth() - 1);
     renderCalendar(currentDate);
   };
-  document.getElementById("next-month").onclick = () => {
+  nextArrow.onclick = () => {
+    if (currentDate >= endMonth) return;
     currentDate.setMonth(currentDate.getMonth() + 1);
     renderCalendar(currentDate);
   };
