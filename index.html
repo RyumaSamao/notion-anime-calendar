@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calendrier Anime Embed</title>
+<title>Calendrier Anime Final</title>
 <style>
   html, body {
     margin: 0;
@@ -38,7 +38,7 @@
 
   .arrow {
     cursor: pointer;
-    font-size: 28px;
+    font-size: 56px; /* 2x plus grandes */
     user-select: none;
   }
   .arrow.disabled {
@@ -150,17 +150,6 @@
 </div>
 
 <script>
-  // Données simulées
-  const animeData = [];
-  let frierenDate = new Date("2026-01-16");
-  for (let i = 0; i < 5; i++) {
-    animeData.push({ title: "Frieren S2", date: frierenDate.toISOString().split('T')[0], time: "20:00", ep: i+1, color: "#2ecc71" });
-    frierenDate.setDate(frierenDate.getDate() + 7);
-  }
-  animeData.push({ title: "Jujutsu Kaisen S2", date: "2026-01-16", time: "19:00", ep: 1, color: "#3498db" });
-  animeData.push({ title: "One Piece", date: "2026-01-18", time: "10:00", ep: 1015, color: "#e74c3c" });
-  animeData.push({ title: "Naruto Shippuden", date: "2026-01-25", time: "21:00", ep: 400, color: "#f1c40f" });
-
   const calendarEl = document.getElementById("calendar");
   const monthTitleEl = document.getElementById("month-title");
   const popup = document.getElementById("anime-popup");
@@ -172,8 +161,25 @@
   const currentYear = new Date().getFullYear();
   const startMonth = new Date(currentYear,0,1);
   const endMonth = new Date(currentYear+1,0,1);
-
   let currentDate = new Date(startMonth);
+
+  // ---- Données simulées, peuvent être remplacées par API ----
+  let animeData = [];
+
+  function fetchAnimeData() {
+    // Exemple pour brancher AniList API plus tard
+    // Retourne un tableau d'animes avec : {title, date, ep, time, color}
+    // Pour le prototype, on utilise des données fictives
+    animeData = [];
+    let frierenDate = new Date("2026-01-16");
+    for (let i = 0; i < 5; i++) {
+      animeData.push({ title: "Frieren S2", date: frierenDate.toISOString().split('T')[0], time: "20:00", ep: i+1, color: "#2ecc71" });
+      frierenDate.setDate(frierenDate.getDate() + 7);
+    }
+    animeData.push({ title: "Jujutsu Kaisen S2", date: "2026-01-16", time: "19:00", ep: 1, color: "#3498db" });
+    animeData.push({ title: "One Piece", date: "2026-01-18", time: "10:00", ep: 1015, color: "#e74c3c" });
+    animeData.push({ title: "Naruto Shippuden", date: "2026-01-25", time: "21:00", ep: 400, color: "#f1c40f" });
+  }
 
   function renderCalendar(date) {
     calendarEl.innerHTML = "";
@@ -206,7 +212,7 @@
         });
 
         if (animeToday.length > 0) {
-          dayEl.onclick = (e) => {
+          dayEl.onclick = () => {
             popupContent.innerHTML = "";
             animeToday.forEach(a => {
               const item = document.createElement("div");
@@ -215,8 +221,6 @@
               item.innerHTML = `<strong>${a.title}</strong><br>Ep ${a.ep} - ${a.time}`;
               popupContent.appendChild(item);
             });
-
-            // Popup au niveau de la case
             const rect = dayEl.getBoundingClientRect();
             const bodyRect = document.body.getBoundingClientRect();
             popup.style.top = (rect.bottom - bodyRect.top + 5) + "px";
@@ -245,6 +249,7 @@
     popup.style.display = "none";
   };
 
+  fetchAnimeData(); // Remplir les données (API ou fictives)
   renderCalendar(currentDate);
 </script>
 
