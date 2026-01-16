@@ -1,7 +1,0 @@
-{
-  "name": "notion-anime-calendar",
-  "version": "1.0.0",
-  "description": "Calendrier anime Notion (AniList)",
-  "type": "module",
-  "private": true
-}
